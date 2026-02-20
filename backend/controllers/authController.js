@@ -98,11 +98,11 @@ export const login = async (req, res) => {
     // Save token to database
     await TokenModel.save(token, user.uid, expiryDate);
 
-    // Set HTTP-only cookie with proper CORS config
+    // Set HTTP-only cookie for cross-domain HTTPS deployment
     res.cookie('authToken', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production' ? true : false,
-      sameSite: 'lax', // Changed from 'strict' to 'lax' for localhost development
+      secure: true,
+      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/'
     });
@@ -139,8 +139,13 @@ export const logout = async (req, res) => {
       }
     }
 
-    // Clear cookie
-    res.clearCookie('authToken');
+    // Clear cookie with matching options
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/'
+    });
 
     res.json({ message: 'Logout successful' });
   } catch (error) {
